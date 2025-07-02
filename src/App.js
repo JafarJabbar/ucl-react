@@ -1,24 +1,86 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import LeagueTable from './components/LeagueTable';
+import MatchResults from './components/MatchResults';
+import WeekNavigation from './components/WeekNavigation';
+import Predictions from './components/Predictions';
+import ControlPanel from './components/ControlPanel';
+import { leagueAPI } from './services/api';
 
 function App() {
+  const [standings, setStandings] = useState([]);
+  const [matches, setMatches] = useState([]);
+  const [currentWeek, setCurrentWeek] = useState(1);
+  const [predictions, setPredictions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [standingsRes, matchesRes] = await Promise.all([
+        leagueAPI.getStandings(),
+        leagueAPI.getMatches()
+      ]);
+
+      setStandings(standingsRes.data.results);
+      setMatches(matchesRes.data.results);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+    setLoading(false);
+  };
+
+  const loadPredictions = async () => {
+    try {
+      const response = await leagueAPI.getPredictions();
+      setPredictions(response.data.results);
+    } catch (error) {
+      console.error('Error loading predictions:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div>Loading...</div>
+        </div>
+    );
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <div className="container">
+        <h1 className="text-center" style={{ fontSize: '2.5rem', marginBottom: '30px', color: '#007bff' }}>
+          ⚽ Champions League Simulation
+        </h1>
+
+        <div className="grid grid-2">
+          {/* Left Column */}
+          <div>
+            <ControlPanel onDataUpdate={loadData} onPredictionsUpdate={loadPredictions} />
+            <WeekNavigation
+                currentWeek={currentWeek}
+                onWeekChange={setCurrentWeek}
+                matches={matches}
+            />
+            <MatchResults
+                matches={matches}
+                currentWeek={currentWeek}
+                onMatchUpdate={loadData}
+            />
+          </div>
+
+          {/* Right Column */}
+          <div>
+            <LeagueTable standings={standings} />
+            {predictions.length > 0 && (
+                <Predictions predictions={predictions} />
+            )}
+          </div>
+        </div>
+      </div>
   );
 }
 
