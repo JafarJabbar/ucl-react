@@ -36,9 +36,21 @@ function App() {
   const loadPredictions = async () => {
     try {
       const response = await leagueAPI.getPredictions();
-      setPredictions(response.data.results);
+      const predictionData = response.data.results;
+      setPredictions(predictionData);
     } catch (error) {
       console.error('Error loading predictions:', error);
+    }
+  };
+
+  const clearPredictions = () => {
+    setPredictions([]);
+  };
+  const handlePredictionsUpdate = (data) => {
+    if (Array.isArray(data) || (data && typeof data === 'object')) {
+      setPredictions(data);
+    } else {
+      loadPredictions();
     }
   };
 
@@ -57,9 +69,12 @@ function App() {
         </h1>
 
         <div className="grid grid-2">
-          {/* Left Column */}
           <div>
-            <ControlPanel onDataUpdate={loadData} onPredictionsUpdate={loadPredictions} />
+            <ControlPanel
+                onDataUpdate={loadData}
+                onPredictionsUpdate={handlePredictionsUpdate}
+                matches={matches}
+            />
             <WeekNavigation
                 currentWeek={currentWeek}
                 onWeekChange={setCurrentWeek}
@@ -72,12 +87,12 @@ function App() {
             />
           </div>
 
-          {/* Right Column */}
           <div>
             <LeagueTable standings={standings} />
-            {predictions.length > 0 && (
+            {(Array.isArray(predictions) && predictions.length > 0) ||
+            (predictions && predictions.predictions && predictions.predictions.length > 0) ? (
                 <Predictions predictions={predictions} />
-            )}
+            ) : null}
           </div>
         </div>
       </div>

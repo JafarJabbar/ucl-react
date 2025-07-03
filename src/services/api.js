@@ -17,4 +17,6 @@ export const leagueAPI = {
     playAllRemaining: () => apiClient.post('/play-all'),
     getPredictions: () => apiClient.get('/predictions'),
     updateMatch: (id, result) => apiClient.put(`/matches/${id}`, result),
+    resetAll: () => apiClient.post('/reset-all'),
+
 };
