@@ -18,5 +18,21 @@ export const leagueAPI = {
     getPredictions: () => apiClient.get('/predictions'),
     updateMatch: (id, result) => apiClient.put(`/matches/${id}`, result),
     resetAll: () => apiClient.post('/reset-all'),
+};
 
+export const teamAPI = {
+    getTeams: () => apiClient.get('/teams'),
+
+    addTeam: (teamData) => apiClient.post('/teams', teamData),
+
+    importTeamsFromJson: (data) => apiClient.post('/teams/import-json', data),
+    deleteTeam: (id) => apiClient.delete(`/teams/${id}`),
+
+    clearAllTeams: () => apiClient.delete('/teams/clear-all'),
+
+    generateFixtures: (data) => apiClient.post('/fixtures/generate', data),
+
+    previewFixtures: (rounds = 2) => apiClient.get(`/fixtures/preview?rounds=${rounds}`),
+
+    validateFixtures: () => apiClient.get('/fixtures/validate'),
 };
